@@ -19,9 +19,4 @@ public class FilePhotoEntity {
     private String fileName;
 
     private String fileUrl;
-
-    @Enumerated(EnumType.STRING)
-    private FileType fileType; // IMAGE, AUDIO, etc.
-
-    private String contentType; // "image/png", "image/jpeg", etc.
 }

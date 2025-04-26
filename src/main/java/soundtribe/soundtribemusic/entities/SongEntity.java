@@ -26,15 +26,14 @@ public class SongEntity {
 
     private Integer duration; // en segundos
 
+    @Column(name = "owner")
+    private Long owner;
+
     private String fileUrl;
 
     @ManyToOne
     @JoinColumn(name = "album_id")
     private AlbumEntity album;
-
-    @ManyToOne
-    @JoinColumn(name = "photo_id")
-    private FilePhotoEntity photo;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -69,6 +68,4 @@ public class SongEntity {
 
     @ElementCollection
     private List<Long> artistaIds; // Referencias externas
-
-    // relación con playlists y votos se hace con entidades intermedias
 }

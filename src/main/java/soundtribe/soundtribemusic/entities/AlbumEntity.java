@@ -43,4 +43,7 @@ public class AlbumEntity {
     // Si querés agregar la lista de canciones más adelante
     @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SongEntity> songs;
+
+    @Column(name = "owner")
+    private Long owner;
 }

@@ -24,8 +24,11 @@ public class MinioConfig {
     @Value("${minio.secret-key}")
     private String secretKey;
 
-    @Value("${minio.bucket-name}")
-    private String bucketName;
+    @Value("${minio.bucket-name.song}")
+    private String songBucket;
+
+    @Value("${minio.bucket-name.portada}")
+    private String portadaBucket;
 
     @Bean
     public MinioClient minioClient() {
@@ -39,20 +42,26 @@ public class MinioConfig {
         try {
             MinioClient minioClient = minioClient();
 
-            // Verifica si el bucket existe
-            boolean isExist = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
-
-            // Si no existe, lo crea
-            if (!isExist) {
-                minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
-                System.out.println("Bucket '" + bucketName + "' creado exitosamente.");
+            // Crear song bucket si no existe
+            if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(songBucket).build())) {
+                minioClient.makeBucket(MakeBucketArgs.builder().bucket(songBucket).build());
+                System.out.println("Bucket '" + songBucket + "' creado exitosamente.");
             } else {
-                System.out.println("Bucket '" + bucketName + "' ya existe.");
+                System.out.println("Bucket '" + songBucket + "' ya existe.");
+            }
+
+            // Crear portada bucket si no existe
+            if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(portadaBucket).build())) {
+                minioClient.makeBucket(MakeBucketArgs.builder().bucket(portadaBucket).build());
+                System.out.println("Bucket '" + portadaBucket + "' creado exitosamente.");
+            } else {
+                System.out.println("Bucket '" + portadaBucket + "' ya existe.");
             }
 
         } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
-            System.err.println("Error al verificar/crear el bucket: " + e.getMessage());
+            System.err.println("Error al verificar/crear los buckets: " + e.getMessage());
         }
     }
+
 
 }
