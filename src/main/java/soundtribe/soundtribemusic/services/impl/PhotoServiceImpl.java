@@ -43,4 +43,7 @@ public class PhotoServiceImpl implements PhotoService {
                 .fileUrl(portadaE.getFileUrl())
                 .build();
     }
+
+
+
 }

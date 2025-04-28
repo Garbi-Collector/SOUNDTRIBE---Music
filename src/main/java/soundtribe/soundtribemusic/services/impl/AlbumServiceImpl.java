@@ -2,8 +2,9 @@ package soundtribe.soundtribemusic.services.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import soundtribe.soundtribemusic.dtos.AlbumDto;
-import soundtribe.soundtribemusic.dtos.SongsDto;
+import org.springframework.transaction.annotation.Transactional;
+import soundtribe.soundtribemusic.dtos.request.RequestAlbumDto;
+import soundtribe.soundtribemusic.dtos.request.RequestSongDto;
 import soundtribe.soundtribemusic.dtos.response.ResponseAlbumDto;
 import soundtribe.soundtribemusic.dtos.response.ResponseSongDto;
 import soundtribe.soundtribemusic.entities.AlbumEntity;
@@ -41,12 +42,13 @@ public class AlbumServiceImpl implements AlbumService {
      * @param albumDto dto que sirve para encapsular las canciones
      * @return retorna un album entity
      */
+    @Transactional
     @Override
     public ResponseAlbumDto uploadAlbumWithSongsAndCover(
             //seguridad
             String token,
             //album
-            AlbumDto albumDto
+            RequestAlbumDto albumDto
     ) {
         // 1) verificamos el token y sacamos el id del artista creador.
         Map<String, Object> userInfo = externalJWTService.validateToken(token);
@@ -73,9 +75,9 @@ public class AlbumServiceImpl implements AlbumService {
         album = albumRepository.save(album);
 
         //inicializo una lista de canciones con las canciones que llegaron por parametro
-        List<SongsDto> songsDtos = albumDto.getSongs();
+        List<RequestSongDto> songsDtos = albumDto.getSongs();
 
-        for (SongsDto songsDto : songsDtos) {
+        for (RequestSongDto songsDto : songsDtos) {
 
             SongEntity song = songService.uploadSongWithInfo(
                     albumOwner,
@@ -116,4 +118,24 @@ public class AlbumServiceImpl implements AlbumService {
                 .build();
 
     }
+
+
+    @Override
+    public List<ResponseAlbumDto> getAlbumsByOwnerId(Long ownerId) {
+        List<AlbumEntity> albums = albumRepository.findByOwner(ownerId);
+
+        if (albums.isEmpty()) {
+            throw new RuntimeException("No se encontraron álbumes para el artista con id: " + ownerId);
+        }
+
+        List<ResponseAlbumDto> responseAlbums = new ArrayList<>();
+
+        for (AlbumEntity album : albums) {
+            responseAlbums.add(mapperAlbum(album.getId()));
+        }
+
+        return responseAlbums;
+    }
+
+
 }

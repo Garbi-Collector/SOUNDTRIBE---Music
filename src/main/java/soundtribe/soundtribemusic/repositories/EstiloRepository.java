@@ -6,4 +6,5 @@ import soundtribe.soundtribemusic.entities.EstiloEntity;
 
 @Repository
 public interface EstiloRepository extends JpaRepository<EstiloEntity, Long> {
+    boolean existsByName(String name);
 }

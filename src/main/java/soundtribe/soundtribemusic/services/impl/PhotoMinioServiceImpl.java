@@ -20,7 +20,7 @@ public class PhotoMinioServiceImpl implements PhotoMinioService {
     @Value("${minio.bucket-name.portada}")
     private String portadaBucket;
 
-    private final long MAX_SIZE_BYTES = 2 * 1024 * 1024; // 2MB como ejemplo promedio
+    private final long MAX_SIZE_BYTES = 3 * 1024 * 1024; // 3MB como ejemplo promedio
 
     @Override
     public String uploadCoverPhoto(String fileName, MultipartFile file) {
@@ -39,7 +39,7 @@ public class PhotoMinioServiceImpl implements PhotoMinioService {
             }
 
             if (file.getSize() > MAX_SIZE_BYTES) {
-                throw new IllegalArgumentException("La imagen excede el tamaño máximo permitido (2MB)");
+                throw new IllegalArgumentException("La imagen excede el tamaño máximo permitido (3MB)");
             }
 
             minioClient.putObject(

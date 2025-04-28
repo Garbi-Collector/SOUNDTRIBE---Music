@@ -5,6 +5,7 @@ import io.minio.PutObjectArgs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import soundtribe.soundtribemusic.services.SongMinioService;
 
@@ -12,6 +13,7 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
@@ -25,6 +27,7 @@ public class SongMinioServiceImpl implements SongMinioService {
     @Value("${minio.bucket-name.song}")
     private String songBucket;
 
+    @Transactional
     @Override
     public String uploadSong(String fileName, MultipartFile file) {
         if (!Objects.requireNonNull(file.getOriginalFilename()).endsWith(".wav")) {
@@ -48,16 +51,25 @@ public class SongMinioServiceImpl implements SongMinioService {
 
     @Override
     public int getWavDurationInSeconds(MultipartFile file) {
-        try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file.getInputStream())) {
-            AudioFormat format = audioInputStream.getFormat();
-            long frames = audioInputStream.getFrameLength();
-            float frameRate = format.getFrameRate();
+        try {
+            // Convertimos el InputStream en un byte[]
+            byte[] fileBytes = file.getBytes();
 
-            return Math.round(frames / frameRate);
+            // Creamos un ByteArrayInputStream que soporta mark/reset
+            try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(fileBytes);
+                 AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(byteArrayInputStream)) {
+
+                AudioFormat format = audioInputStream.getFormat();
+                long frames = audioInputStream.getFrameLength();
+                float frameRate = format.getFrameRate();
+
+                return Math.round(frames / frameRate);
+            }
         } catch (UnsupportedAudioFileException | IOException e) {
             throw new RuntimeException("No se pudo calcular la duración del archivo WAV: " + e.getMessage(), e);
         }
     }
+
 
     @Override
     public boolean isValidDurationForSaving(MultipartFile file) {

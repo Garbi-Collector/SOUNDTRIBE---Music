@@ -2,7 +2,8 @@ package soundtribe.soundtribemusic.services.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import soundtribe.soundtribemusic.dtos.SongsDto;
+import org.springframework.transaction.annotation.Transactional;
+import soundtribe.soundtribemusic.dtos.request.RequestSongDto;
 import soundtribe.soundtribemusic.dtos.response.ResponseEstiloDto;
 import soundtribe.soundtribemusic.dtos.response.ResponseGeneroDto;
 import soundtribe.soundtribemusic.dtos.response.ResponseSongDto;
@@ -12,6 +13,7 @@ import soundtribe.soundtribemusic.entities.GeneroEntity;
 import soundtribe.soundtribemusic.entities.SongEntity;
 import soundtribe.soundtribemusic.entities.SubgeneroEntity;
 import soundtribe.soundtribemusic.repositories.SongRepository;
+import soundtribe.soundtribemusic.services.CategoriasService;
 import soundtribe.soundtribemusic.services.SongMinioService;
 import soundtribe.soundtribemusic.services.SongService;
 
@@ -25,12 +27,15 @@ public class SongServiceImpl implements SongService {
     @Autowired
     SongMinioService songMinioService;
     @Autowired
+    CategoriasService categoriasService;
+    @Autowired
     SongRepository repo;
 
+    @Transactional
     @Override
     public SongEntity uploadSongWithInfo(
             Long owner,
-            SongsDto songsDto
+            RequestSongDto songsDto
     ) {
         String fileUrl = songMinioService.uploadSong(UUID.randomUUID() + ".wav", songsDto.getFile());
 
@@ -40,10 +45,13 @@ public class SongServiceImpl implements SongService {
                 .description(songsDto.getDescription())
                 .duration(songMinioService.getWavDurationInSeconds(songsDto.getFile()))
                 .fileUrl(fileUrl)
-                .generos(songsDto.getGeneros())
-                .subgeneros(songsDto.getSubgeneros())
-                .estilos(songsDto.getEstilos())
-                .artistaIds(songsDto.getArtistaId())
+                .generos(categoriasService.getGenerosByIds(songsDto.getGenero()))
+
+                .subgeneros(categoriasService.getSubgenerosByIds(songsDto.getSubgenero()))
+
+                .estilos(categoriasService.getEstilosByIds(songsDto.getEstilo()))
+
+                .artistaIds(songsDto.getArtistasFt())
                 .owner(owner)
                 .build();
 

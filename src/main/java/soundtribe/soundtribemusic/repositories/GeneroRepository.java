@@ -6,4 +6,5 @@ import soundtribe.soundtribemusic.entities.GeneroEntity;
 
 @Repository
 public interface GeneroRepository extends JpaRepository<GeneroEntity, Long> {
+    boolean existsByName(String name);
 }
