@@ -6,4 +6,7 @@ import soundtribe.soundtribemusic.entities.SongEntity;
 
 @Repository
 public interface SongRepository extends JpaRepository<SongEntity, Long> {
+
+    boolean existsBySlugAndAlbumId(String slug, Long albumId);
+
 }

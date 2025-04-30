@@ -20,4 +20,6 @@ public class ResponseAlbumDto {
     private ResponsePortadaDto portada;
     private List<ResponseSongDto> songs;
     private Long owner;
+    private String slug;
+    private Long likeCount;
 }

@@ -66,6 +66,14 @@ public class SongEntity {
     )
     private List<EstiloEntity> estilos;
 
-    @ElementCollection
-    private List<Long> artistaIds; // Referencias externas
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<Long> artistaIds; // Referencias externas a otro microservicio
+
+    @Column(name = "play_count", nullable = false)
+    private Long playCount;
+
+
+    @Column(name = "slug")
+    private String slug;
+
 }

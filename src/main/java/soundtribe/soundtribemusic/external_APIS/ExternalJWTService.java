@@ -38,6 +38,13 @@ public class ExternalJWTService {
 
         ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
 
+        Map<String, Object> responseBody = response.getBody();
+        if (responseBody == null || !Boolean.TRUE.equals(responseBody.get("valid"))) {
+            logger.error("Token no válido según respuesta del backend: {}", responseBody);
+            throw new RuntimeException("Token inválido según validación del backend");
+        }
+
+
         logger.info("Respuesta HTTP status: {}", response.getStatusCode());
 
         if (response.getStatusCode().is2xxSuccessful()) {

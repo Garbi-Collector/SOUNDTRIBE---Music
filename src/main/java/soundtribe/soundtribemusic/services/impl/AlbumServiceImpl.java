@@ -35,6 +35,9 @@ public class AlbumServiceImpl implements AlbumService {
     @Autowired
     private SongService songService;
 
+    @Autowired
+    private SlugGenerator slugGenerator;
+
     /**
      *  metodo especializado y central del microservicio, maneja muchas acciones
      *  como para subir canciones (en bucle) y portadas
@@ -70,6 +73,7 @@ public class AlbumServiceImpl implements AlbumService {
                 .photo(portadaEntity)
                 .songs(new ArrayList<>())
                 .owner(albumOwner)
+                .slug(generateUniqueSlug())
                 .build();
 
         album = albumRepository.save(album);
@@ -91,6 +95,14 @@ public class AlbumServiceImpl implements AlbumService {
         AlbumEntity albumsaved =albumRepository.save(album);
 
         return mapperAlbum(albumsaved.getId());
+    }
+
+    private String generateUniqueSlug() {
+        String slug;
+        do {
+            slug = slugGenerator.generateSlug();
+        } while (albumRepository.existsBySlug(slug));
+        return slug;
     }
 
 
@@ -115,11 +127,14 @@ public class AlbumServiceImpl implements AlbumService {
                 .portada(photoService.getPortadaDto(albumE.getPhoto().getId()))
                 .songs(songs)
                 .owner(albumE.getOwner())
+                .slug(albumE.getSlug())
+                .likeCount(albumE.getLikeCount())
                 .build();
 
     }
 
 
+    @Transactional(readOnly = true)
     @Override
     public List<ResponseAlbumDto> getAlbumsByOwnerId(Long ownerId) {
         List<AlbumEntity> albums = albumRepository.findByOwner(ownerId);
@@ -136,6 +151,8 @@ public class AlbumServiceImpl implements AlbumService {
 
         return responseAlbums;
     }
+
+
 
 
 }

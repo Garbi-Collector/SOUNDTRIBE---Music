@@ -16,6 +16,7 @@ import soundtribe.soundtribemusic.repositories.SongRepository;
 import soundtribe.soundtribemusic.services.CategoriasService;
 import soundtribe.soundtribemusic.services.SongMinioService;
 import soundtribe.soundtribemusic.services.SongService;
+import soundtribe.soundtribemusic.services.VoteService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,12 @@ public class SongServiceImpl implements SongService {
     CategoriasService categoriasService;
     @Autowired
     SongRepository repo;
+    @Autowired
+    VoteService voteService;
+    @Autowired
+    SlugGenerator slugGenerator;
+
+
 
     @Transactional
     @Override
@@ -46,13 +53,12 @@ public class SongServiceImpl implements SongService {
                 .duration(songMinioService.getWavDurationInSeconds(songsDto.getFile()))
                 .fileUrl(fileUrl)
                 .generos(categoriasService.getGenerosByIds(songsDto.getGenero()))
-
                 .subgeneros(categoriasService.getSubgenerosByIds(songsDto.getSubgenero()))
-
                 .estilos(categoriasService.getEstilosByIds(songsDto.getEstilo()))
-
                 .artistaIds(songsDto.getArtistasFt())
+                .playCount(0L)
                 .owner(owner)
+                .slug(slugGenerator.generateSlug())
                 .build();
 
         return repo.save(song);
@@ -110,6 +116,8 @@ public class SongServiceImpl implements SongService {
                 .subgenero(subgeneros)
                 .estilo(estilos)
                 .artistasFt(songE.getArtistaIds())
+                .likes(voteService.getLike(songE.getId()))
+                .dislike(voteService.getDislike(songE.getId()))
                 .build();
     }
 }

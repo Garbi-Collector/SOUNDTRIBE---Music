@@ -10,4 +10,5 @@ import java.util.List;
 public interface AlbumRepository extends JpaRepository<AlbumEntity, Long> {
     List<AlbumEntity> findByOwner(Long owner);
 
+    boolean existsBySlug(String slug);
 }

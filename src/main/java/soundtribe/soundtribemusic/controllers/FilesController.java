@@ -75,7 +75,11 @@ public class FilesController {
             SongEntity songEntity = songRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Canción no encontrada con el ID: " + id));
 
-            // 2. Extraer el nombre real del archivo (recordá que fileUrl es tipo "bucket/filename.wav")
+            // 2. Incrementar el contador de reproducciones
+            songEntity.setPlayCount(songEntity.getPlayCount() + 1);
+            songRepository.save(songEntity);
+
+            // 3. Extraer el nombre real del archivo (recordá que fileUrl es tipo "bucket/filename.wav")
             String[] parts = songEntity.getFileUrl().split("/");
             String fileName = parts[1];
 

@@ -2,6 +2,13 @@ package soundtribe.soundtribemusic.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import soundtribe.soundtribemusic.entities.SongVoteEntity;
+import soundtribe.soundtribemusic.models.enums.VoteType;
+
+import java.util.Optional;
 
 public interface SongVoteRepository extends JpaRepository<SongVoteEntity, Long> {
+
+    long countBySongIdAndVoteType(Long songId, VoteType voteType);
+
+    Optional<SongVoteEntity> findByUserIdAndSongId(Long userId, Long songId);
 }

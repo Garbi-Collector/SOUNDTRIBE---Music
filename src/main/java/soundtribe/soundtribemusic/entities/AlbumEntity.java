@@ -46,4 +46,12 @@ public class AlbumEntity {
 
     @Column(name = "owner")
     private Long owner;
+
+    @Column(name = "like_count")
+    private Long likeCount;
+
+    @Column(name = "slug")
+    private String slug;
+
+
 }

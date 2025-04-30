@@ -5,7 +5,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import soundtribe.soundtribemusic.dtos.AlbumDto;
 import soundtribe.soundtribemusic.dtos.request.RequestAlbumDto;
 import soundtribe.soundtribemusic.dtos.request.RequestSongDto;
 import soundtribe.soundtribemusic.dtos.request.UploadAlbumDto;
@@ -15,6 +14,7 @@ import soundtribe.soundtribemusic.models.enums.TypeAlbum;
 import soundtribe.soundtribemusic.services.AlbumService;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -53,9 +53,16 @@ public class AlbumController {
      * Obtener todos los álbumes de un artista por su ID
      */
     @GetMapping("/artist/{ownerId}")
-    public List<ResponseAlbumDto> getAlbumsByArtist(@PathVariable Long ownerId) {
-        return albumService.getAlbumsByOwnerId(ownerId);
+    public ResponseEntity<List<ResponseAlbumDto>> getAlbumsByArtist(@PathVariable Long ownerId) {
+        try {
+            List<ResponseAlbumDto> albums = albumService.getAlbumsByOwnerId(ownerId);
+            return ResponseEntity.ok(albums);
+        } catch (Exception e) {
+            // logger.error("Error al obtener álbumes por artista", e);
+            return ResponseEntity.ok(Collections.emptyList());
+        }
     }
+
 
 
     private RequestAlbumDto buildRequestAlbumDto(UploadAlbumDto uploadAlbumDto, MultipartFile portada, List<MultipartFile> songFiles) {

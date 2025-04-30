@@ -23,4 +23,7 @@ public class ResponseSongDto {
     private List<ResponseSubgeneroDto> subgenero;
     private List<ResponseEstiloDto> estilo;
     private List<Long> artistasFt;
+    private Long likes;
+    private Long dislike;
+    private String slug;
 }

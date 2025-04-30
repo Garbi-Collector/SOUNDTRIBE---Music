@@ -22,4 +22,6 @@ public class AlbumDto {
     MultipartFile portada;
     //songs
     List<SongsDto> songs;
+
+    private String slug;
 }
