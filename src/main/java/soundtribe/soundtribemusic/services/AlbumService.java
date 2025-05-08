@@ -20,4 +20,6 @@ public interface AlbumService {
     ResponseAlbumDto mapperAlbum(Long id);
 
     List<ResponseAlbumDto> getAlbumsByOwnerId(Long ownerId);
+
+    ResponseAlbumDto getAlbumBySlug(String slug);
 }

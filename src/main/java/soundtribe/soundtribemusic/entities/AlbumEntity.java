@@ -40,8 +40,7 @@ public class AlbumEntity {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    // Si querés agregar la lista de canciones más adelante
-    @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<SongEntity> songs;
 
     @Column(name = "owner")

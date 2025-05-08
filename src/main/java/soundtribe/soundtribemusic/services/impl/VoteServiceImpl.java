@@ -1,6 +1,7 @@
 package soundtribe.soundtribemusic.services.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import soundtribe.soundtribemusic.entities.SongEntity;
 import soundtribe.soundtribemusic.entities.SongVoteEntity;
@@ -25,35 +26,55 @@ public class VoteServiceImpl implements VoteService {
     @Autowired
     private ExternalJWTService externalJWTService;
 
+    @Async
     @Override
     public void votar(
             String token,
             Long idSong,
-            VoteType voteType){
-        // 1) Verificamos el token y sacamos el id del usuario.
+            VoteType newVoteType
+    ) {
+        // 1) Extraer el ID del usuario desde el token JWT
         Map<String, Object> userInfo = externalJWTService.validateToken(token);
         Long voter = Long.parseLong(userInfo.get("userId").toString());
 
-        // 2) Buscamos la canción por su id
+        // 2) Obtener la canción
         SongEntity song = songRepository.findById(idSong)
                 .orElseThrow(() -> new RuntimeException("La canción con Id: " + idSong + " no se encontró"));
 
-        // 3) Buscamos si ya existe un voto previo del usuario para esa canción
-        Optional<SongVoteEntity> existingVote = repository.findByUserIdAndSongId(voter, song.getId());
+        // 3) Buscar si ya existe un voto
+        Optional<SongVoteEntity> existingVoteOpt = repository.findByUserIdAndSongId(voter, song.getId());
 
-        // 4) Si ya existe un voto previo, lo eliminamos
-        existingVote.ifPresent(vote -> repository.delete(vote));
+        if (existingVoteOpt.isEmpty()) {
+            // Caso 1: No existe voto previo → crear uno nuevo
+            SongVoteEntity newVote = SongVoteEntity.builder()
+                    .userId(voter)
+                    .song(song)
+                    .voteType(newVoteType)
+                    .build();
+            repository.save(newVote);
 
-        // 5) Creamos un nuevo voto
-        SongVoteEntity newVote = new SongVoteEntity().builder()
-                .userId(voter)
-                .song(song)
-                .voteType(voteType)
-                .build();
+        } else {
+            // Ya existe un voto
+            SongVoteEntity existingVote = existingVoteOpt.get();
 
-        // 6) Guardamos el nuevo voto
-        repository.save(newVote);
+            if (existingVote.getVoteType() == newVoteType) {
+                // Caso 2: Repite el mismo voto → eliminar
+                repository.delete(existingVote);
+
+            } else {
+                // Caso 3: Cambia el voto → eliminar el viejo, crear el nuevo
+                repository.delete(existingVote);
+
+                SongVoteEntity newVote = SongVoteEntity.builder()
+                        .userId(voter)
+                        .song(song)
+                        .voteType(newVoteType)
+                        .build();
+                repository.save(newVote);
+            }
+        }
     }
+
 
 
     @Override

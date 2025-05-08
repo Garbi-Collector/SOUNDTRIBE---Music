@@ -46,6 +46,19 @@ public class AlbumController {
     }
 
 
+    /**
+     * Obtener un álbum por su slug
+     */
+    @GetMapping("/slug/{slug}")
+    public ResponseEntity<ResponseAlbumDto> getAlbumBySlug(@PathVariable String slug) {
+        try {
+            ResponseAlbumDto album = albumService.getAlbumBySlug(slug);
+            return ResponseEntity.ok(album);
+        } catch (RuntimeException e) {
+            // Puedes personalizar el mensaje o crear una excepción más específica
+            return ResponseEntity.status(404).body(null);
+        }
+    }
 
 
 

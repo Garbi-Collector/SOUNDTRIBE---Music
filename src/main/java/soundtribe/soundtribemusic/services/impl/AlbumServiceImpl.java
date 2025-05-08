@@ -1,6 +1,9 @@
+
 package soundtribe.soundtribemusic.services.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soundtribe.soundtribemusic.dtos.request.RequestAlbumDto;
@@ -74,6 +77,7 @@ public class AlbumServiceImpl implements AlbumService {
                 .songs(new ArrayList<>())
                 .owner(albumOwner)
                 .slug(generateUniqueSlug())
+                .likeCount(0L)
                 .build();
 
         album = albumRepository.save(album);
@@ -105,7 +109,8 @@ public class AlbumServiceImpl implements AlbumService {
         return slug;
     }
 
-
+    @Cacheable(value = "albumMapperCache", key = "#id")
+    @Transactional
     @Override
     public ResponseAlbumDto mapperAlbum(Long id){
         AlbumEntity albumE = albumRepository.findById(id)
@@ -153,6 +158,40 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
 
+    @Transactional
+    @Override
+    public ResponseAlbumDto getAlbumBySlug(String slug){
+        System.out.println("el slug recibido es: " + slug);
+
+        AlbumEntity albumE = albumRepository.findBySlug(slug)
+                .orElseThrow(() -> new RuntimeException("Album no encontrado con el slug: " + slug));
+
+        System.out.println("Álbum encontrado: " + albumE.getDescription());
+
+        ResponseAlbumDto dto = mapperAlbum(albumE.getId());
+
+        // Mostrar cada campo del DTO manualmente
+        System.out.println("=== DTO generado ===");
+        System.out.println("ID: " + dto.getId());
+        System.out.println("Nombre: " + dto.getName());
+        System.out.println("Descripción: " + dto.getDescription());
+        System.out.println("Tipo de Álbum: " + dto.getTypeAlbum());
+        System.out.println("Portada ID: " + (dto.getPortada() != null ? dto.getPortada().getId() : "null"));
+        System.out.println("Portada URL: " + (dto.getPortada() != null ? dto.getPortada().getFileUrl() : "null"));
+        System.out.println("Canciones:");
+        if (dto.getSongs() != null && !dto.getSongs().isEmpty()) {
+            for (ResponseSongDto song : dto.getSongs()) {
+                System.out.println(" - ID: " + song.getId() + ", Nombre: " + song.getName());
+            }
+        } else {
+            System.out.println(" - No hay canciones");
+        }
+        System.out.println("Owner: " + dto.getOwner());
+        System.out.println("Slug: " + dto.getSlug());
+        System.out.println("Likes: " + dto.getLikeCount());
+
+        return dto;
+    }
 
 
 }

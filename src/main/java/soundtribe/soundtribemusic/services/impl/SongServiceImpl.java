@@ -118,6 +118,7 @@ public class SongServiceImpl implements SongService {
                 .artistasFt(songE.getArtistaIds())
                 .likes(voteService.getLike(songE.getId()))
                 .dislike(voteService.getDislike(songE.getId()))
+                .duration(songE.getDuration())
                 .build();
     }
 }

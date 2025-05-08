@@ -1,9 +1,11 @@
+
 package soundtribe.soundtribemusic.controllers;
 
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -69,21 +71,20 @@ public class FilesController {
     }
 
     @GetMapping("/play/{id}")
-    public ResponseEntity<byte[]> playSongById(@PathVariable Long id) {
+    public ResponseEntity<InputStreamResource> playSongById(@PathVariable Long id) {
         try {
-            // 1. Buscar la canción en la base de datos
+            // 1. Buscar canción
             SongEntity songEntity = songRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Canción no encontrada con el ID: " + id));
 
-            // 2. Incrementar el contador de reproducciones
+            // 2. Incrementar contador de reproducciones
             songEntity.setPlayCount(songEntity.getPlayCount() + 1);
             songRepository.save(songEntity);
 
-            // 3. Extraer el nombre real del archivo (recordá que fileUrl es tipo "bucket/filename.wav")
+            // 3. Obtener archivo desde MinIO
             String[] parts = songEntity.getFileUrl().split("/");
             String fileName = parts[1];
 
-            // 3. Descargar el archivo desde MinIO
             InputStream objectStream = minioClient.getObject(
                     GetObjectArgs.builder()
                             .bucket(songBucket)
@@ -91,18 +92,20 @@ public class FilesController {
                             .build()
             );
 
-            // 4. Convertir el InputStream a un array de bytes
-            byte[] bytes = objectStream.readAllBytes();
+            InputStreamResource resource = new InputStreamResource(objectStream);
 
-            // 5. Configurar headers para audio
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType("audio/wav"));
+            headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline;filename=\"" + fileName + "\"");
 
-            // 6. Retornar el archivo de audio
-            return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+            return ResponseEntity
+                    .ok()
+                    .headers(headers)
+                    .body(resource);
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
 }
