@@ -12,6 +12,8 @@ public interface VoteService {
             Long idSong,
             VoteType voteType);
 
+    boolean isVoted(String jwt, Long idSong, VoteType vote);
+
     void eliminarVoto(String token, Long idSong);
 
     Long getLike(Long idSong);

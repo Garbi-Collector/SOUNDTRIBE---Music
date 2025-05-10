@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import soundtribe.soundtribemusic.dtos.VoteMessage;
 import soundtribe.soundtribemusic.dtos.VoteResponse;
+import soundtribe.soundtribemusic.models.enums.VoteType;
 import soundtribe.soundtribemusic.services.VoteService;
 
 @RestController
@@ -48,4 +49,29 @@ public class VoteController {
 
         return ResponseEntity.ok("Voto eliminado correctamente");
     }
+
+    @GetMapping("/{idSong}/isvoted")
+    public ResponseEntity<?> isVoted(
+            @RequestHeader("Authorization") String bearerToken,
+            @PathVariable Long idSong,
+            @RequestParam("vote") VoteType voteType
+    ) {
+        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body("Token no proporcionado o inválido");
+        }
+
+        String token = bearerToken.replace("Bearer ", "");
+
+        try {
+            boolean isVoted = voteService.isVoted(token, idSong, voteType);
+            return ResponseEntity.ok(isVoted); // true o false
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error interno del servidor.");
+        }
+    }
+
+
+
 }
