@@ -1,20 +1,26 @@
 
 package soundtribe.soundtribemusic.services.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import soundtribe.soundtribemusic.dtos.notis.NotificationPost;
+import soundtribe.soundtribemusic.dtos.notis.NotificationType;
 import soundtribe.soundtribemusic.dtos.request.RequestAlbumDto;
 import soundtribe.soundtribemusic.dtos.request.RequestSongDto;
 import soundtribe.soundtribemusic.dtos.response.ResponseAlbumDto;
 import soundtribe.soundtribemusic.dtos.response.ResponseSongDto;
+import soundtribe.soundtribemusic.dtos.user.UserGet;
 import soundtribe.soundtribemusic.entities.AlbumEntity;
+import soundtribe.soundtribemusic.entities.AlbumVoteEntity;
 import soundtribe.soundtribemusic.entities.FilePhotoEntity;
 import soundtribe.soundtribemusic.entities.SongEntity;
 import soundtribe.soundtribemusic.external_APIS.ExternalJWTService;
+import soundtribe.soundtribemusic.external_APIS.NotificationService;
+import soundtribe.soundtribemusic.external_APIS.UserFollowersService;
 import soundtribe.soundtribemusic.repositories.AlbumRepository;
+import soundtribe.soundtribemusic.repositories.AlbumVoteRepository;
 import soundtribe.soundtribemusic.services.AlbumService;
 import soundtribe.soundtribemusic.services.PhotoService;
 import soundtribe.soundtribemusic.services.SongService;
@@ -22,6 +28,7 @@ import soundtribe.soundtribemusic.services.SongService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class AlbumServiceImpl implements AlbumService {
@@ -41,10 +48,20 @@ public class AlbumServiceImpl implements AlbumService {
     @Autowired
     private SlugGenerator slugGenerator;
 
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private UserFollowersService userFollowersService;
+
+    @Autowired
+    private AlbumVoteRepository albumVoteRepository;
+
     /**
-     *  metodo especializado y central del microservicio, maneja muchas acciones
-     *  como para subir canciones (en bucle) y portadas
-     * @param token sirve para saber si el que usa el metodo esta validamente identificado y saber quien es
+     * metodo especializado y central del microservicio, maneja muchas acciones
+     * como para subir canciones (en bucle) y portadas
+     *
+     * @param token    sirve para saber si el que usa el metodo esta validamente identificado y saber quien es
      * @param albumDto dto que sirve para encapsular las canciones
      * @return retorna un album entity
      */
@@ -96,7 +113,27 @@ public class AlbumServiceImpl implements AlbumService {
             album.getSongs().add(song);
         }
 
-        AlbumEntity albumsaved =albumRepository.save(album);
+        AlbumEntity albumsaved = albumRepository.save(album);
+
+        // enviar notificacion a los seguidores del artista
+
+        // Obtener los seguidores del artista desde el microservicio de usuarios
+        List<UserGet> usuariosSeguidores = userFollowersService.getFollowers(token);
+
+        // Extraer solo los IDs de los seguidores
+        List<Long> idsUsuarios = usuariosSeguidores.stream()
+                .map(UserGet::getId)
+                .toList();
+
+        notificationService.enviarNotificacion(
+                token,
+                NotificationPost.builder()
+                        .receivers(idsUsuarios)
+                        .type(NotificationType.NEW_ALBUM)
+                        .slugAlbum(albumsaved.getSlug())
+                        .nameAlbum(albumsaved.getName())
+                        .build()
+        );
 
         return mapperAlbum(albumsaved.getId());
     }
@@ -112,13 +149,13 @@ public class AlbumServiceImpl implements AlbumService {
     @Cacheable(value = "albumMapperCache", key = "#id")
     @Transactional
     @Override
-    public ResponseAlbumDto mapperAlbum(Long id){
+    public ResponseAlbumDto mapperAlbum(Long id) {
         AlbumEntity albumE = albumRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Album no encontrado con el id: "+id));
+                .orElseThrow(() -> new RuntimeException("Album no encontrado con el id: " + id));
         ResponseAlbumDto albumDto;
 
         List<ResponseSongDto> songs = new ArrayList<>();
-        for (SongEntity song: albumE.getSongs()){
+        for (SongEntity song : albumE.getSongs()) {
             ResponseSongDto songDTO = songService.getSongDto(song.getId());
             songs.add(songDTO);
         }
@@ -156,6 +193,73 @@ public class AlbumServiceImpl implements AlbumService {
 
         return responseAlbums;
     }
+
+
+    @Transactional
+    @Override
+    public void likeUnlikeAlbum(String jwt, Long idAlbum) {
+        // 1) Validamos el token
+        Map<String, Object> userInfo = externalJWTService.validateToken(jwt);
+
+        Long userId = Long.parseLong(userInfo.get("userId").toString());
+
+        // 2) Buscamos el álbum
+        AlbumEntity album = albumRepository.findById(idAlbum)
+                .orElseThrow(() -> new RuntimeException("Álbum no encontrado con el ID: " + idAlbum));
+
+
+        // 4) Verificamos si ya dio like
+        Optional<AlbumVoteEntity> existingVote = albumVoteRepository.findByUserLikerAndAlbumId(userId, idAlbum);
+
+        if (existingVote.isPresent()) {
+            // Ya dio like → hacemos unlike
+            album.setLikeCount(album.getLikeCount() - 1);
+            albumVoteRepository.delete(existingVote.get());
+        } else {
+            // No dio like aún → damos like
+            album.setLikeCount(album.getLikeCount() + 1);
+
+            AlbumVoteEntity vote = AlbumVoteEntity.builder()
+                    .userLiker(userId)
+                    .album(album)
+                    .build();
+
+            albumVoteRepository.save(vote);
+
+            if (!album.getOwner().equals(userId)){
+                //creamos notificacion
+                notificationService.enviarNotificacion(
+                        jwt,
+                        NotificationPost.builder()
+                                .receivers(List.of(album.getOwner()))
+                                .type(NotificationType.LIKE_ALBUM)
+                                .slugAlbum(album.getSlug())
+                                .nameAlbum(album.getName())
+                                .build()
+                );
+            }
+        }
+        albumRepository.save(album);
+    }
+
+    @Transactional
+    @Override
+    public boolean isLikedAlbum(String jwt, Long idAlbum){
+        // 1) Validamos el token
+        Map<String, Object> userInfo = externalJWTService.validateToken(jwt);
+
+        Long userId = Long.parseLong(userInfo.get("userId").toString());
+
+        // 2) Buscamos el álbum
+        AlbumEntity album = albumRepository.findById(idAlbum)
+                .orElseThrow(() -> new RuntimeException("Álbum no encontrado con el ID: " + idAlbum));
+
+
+        // 4) Verificamos si ya dio like, true si existe, false si no.
+        return albumVoteRepository.existsByUserLikerAndAlbum_Id(userId, idAlbum);
+    }
+
+
 
 
     @Transactional

@@ -107,4 +107,49 @@ public class AlbumController {
                 .build();
     }
 
+
+    @PostMapping("/{idAlbum}/like")
+    public ResponseEntity<String> likeOrUnlikeAlbum(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long idAlbum
+    ) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body("Token no proporcionado o inválido");
+        }
+
+        String token = authorizationHeader.substring(7); // quitar "Bearer "
+
+        try {
+            albumService.likeUnlikeAlbum(token, idAlbum);
+            return ResponseEntity.ok("Operación de like/unlike completada correctamente.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(403).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Ocurrió un error al procesar la acción.");
+        }
+    }
+
+    @GetMapping("/{idAlbum}/isliked")
+    public ResponseEntity<?> isLikedAlbum(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @PathVariable Long idAlbum
+    ) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body("Token no proporcionado o inválido");
+        }
+
+        String token = authorizationHeader.substring(7); // quitar "Bearer "
+
+        try {
+            boolean isLiked = albumService.isLikedAlbum(token, idAlbum);
+            return ResponseEntity.ok(isLiked);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(403).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Ocurrió un error al procesar la acción.");
+        }
+    }
+
+
+
 }

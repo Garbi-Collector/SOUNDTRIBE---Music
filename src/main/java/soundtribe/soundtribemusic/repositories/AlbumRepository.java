@@ -14,4 +14,8 @@ public interface AlbumRepository extends JpaRepository<AlbumEntity, Long> {
     boolean existsBySlug(String slug);
 
     Optional<AlbumEntity> findBySlug(String slug);
+
+    Optional<AlbumEntity> findById(Long id);
+
+    Long id(Long id);
 }
