@@ -11,10 +11,11 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class NotificationPost {
-    List<Long> receivers; //aca
-    NotificationType type; //aca
-    String slugSong; //para las canciones
-    String nameSong; //para las canciones
-    String slugAlbum; //para los albumes
-    String nameAlbum; //para los albumes
+    List<Long> receivers;
+    NotificationType type;
+    String slugSong;
+    String nameSong;
+    String slugAlbum;
+    String nameAlbum;
+    String mensaje;
 }

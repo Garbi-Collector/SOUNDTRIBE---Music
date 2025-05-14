@@ -54,6 +54,4 @@ public class AlbumEntity {
 
     @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AlbumVoteEntity> votes;
-
-
 }

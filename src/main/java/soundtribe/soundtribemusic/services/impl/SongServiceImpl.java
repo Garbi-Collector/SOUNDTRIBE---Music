@@ -64,6 +64,7 @@ public class SongServiceImpl implements SongService {
         return repo.save(song);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ResponseSongDto getSongDto(Long id){
         SongEntity songE = repo.findById(id)

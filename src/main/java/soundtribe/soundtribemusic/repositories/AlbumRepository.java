@@ -1,6 +1,7 @@
 package soundtribe.soundtribemusic.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import soundtribe.soundtribemusic.entities.AlbumEntity;
 
@@ -18,4 +19,21 @@ public interface AlbumRepository extends JpaRepository<AlbumEntity, Long> {
     Optional<AlbumEntity> findById(Long id);
 
     Long id(Long id);
+
+    List<AlbumEntity> findTop10ByOrderByCreatedAtDesc();
+
+    List<AlbumEntity> findTop10ByOrderByLikeCountDesc();
+
+
+    @Query(value = """
+        SELECT a.*
+        FROM album a
+        JOIN song s ON a.id = s.album_id
+        GROUP BY a.id
+        ORDER BY SUM(s.play_count) DESC
+        LIMIT 10
+        """, nativeQuery = true)
+    List<AlbumEntity> findTop10MostPlayedAlbums();
+
+
 }

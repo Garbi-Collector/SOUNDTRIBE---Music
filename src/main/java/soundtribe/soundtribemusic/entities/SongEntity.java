@@ -75,5 +75,4 @@ public class SongEntity {
 
     @Column(name = "slug")
     private String slug;
-
 }

@@ -152,7 +152,6 @@ public class AlbumServiceImpl implements AlbumService {
     public ResponseAlbumDto mapperAlbum(Long id) {
         AlbumEntity albumE = albumRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Album no encontrado con el id: " + id));
-        ResponseAlbumDto albumDto;
 
         List<ResponseSongDto> songs = new ArrayList<>();
         for (SongEntity song : albumE.getSongs()) {
@@ -161,7 +160,7 @@ public class AlbumServiceImpl implements AlbumService {
         }
 
 
-        return albumDto = ResponseAlbumDto.builder()
+        return ResponseAlbumDto.builder()
                 .id(albumE.getId())
                 .name(albumE.getName())
                 .description(albumE.getDescription())
