@@ -26,4 +26,5 @@ public class ResponseSongDto {
     private Long likes;
     private Long dislike;
     private String slug;
+    private Long playCount;
 }

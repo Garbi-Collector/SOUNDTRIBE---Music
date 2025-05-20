@@ -159,6 +159,10 @@ public class AlbumServiceImpl implements AlbumService {
             songs.add(songDTO);
         }
 
+        Long allPlaysCount = songs.stream()
+                .mapToLong(ResponseSongDto::getPlayCount)
+                .sum();
+
 
         return ResponseAlbumDto.builder()
                 .id(albumE.getId())
@@ -170,6 +174,7 @@ public class AlbumServiceImpl implements AlbumService {
                 .owner(albumE.getOwner())
                 .slug(albumE.getSlug())
                 .likeCount(albumE.getLikeCount())
+                .allPlaysCount(allPlaysCount)
                 .build();
 
     }

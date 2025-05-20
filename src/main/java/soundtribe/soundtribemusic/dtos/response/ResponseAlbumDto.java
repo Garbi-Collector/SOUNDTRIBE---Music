@@ -22,4 +22,5 @@ public class ResponseAlbumDto {
     private Long owner;
     private String slug;
     private Long likeCount;
+    private Long allPlaysCount;
 }

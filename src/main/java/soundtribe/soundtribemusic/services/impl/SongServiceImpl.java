@@ -120,6 +120,7 @@ public class SongServiceImpl implements SongService {
                 .likes(voteService.getLike(songE.getId()))
                 .dislike(voteService.getDislike(songE.getId()))
                 .duration(songE.getDuration())
+                .playCount(songE.getPlayCount())
                 .build();
     }
 }
