@@ -35,5 +35,4 @@ public interface AlbumRepository extends JpaRepository<AlbumEntity, Long> {
         """, nativeQuery = true)
     List<AlbumEntity> findTop10MostPlayedAlbums();
 
-
 }

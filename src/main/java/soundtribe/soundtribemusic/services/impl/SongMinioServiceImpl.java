@@ -2,6 +2,7 @@ package soundtribe.soundtribemusic.services.impl;
 
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -81,6 +82,34 @@ public class SongMinioServiceImpl implements SongMinioService {
         }
     }
 
+    @Override
+    public void deleteSongFromMinio(String fileUrl) {
+        try {
+            // Validamos y extraemos el nombre del archivo
+            if (fileUrl == null || !fileUrl.contains("/")) {
+                throw new IllegalArgumentException("La URL del archivo no es válida");
+            }
+
+            String[] parts = fileUrl.split("/");
+            if (parts.length != 2 || !parts[0].equals(songBucket)) {
+                throw new IllegalArgumentException("Formato de fileUrl inválido o bucket incorrecto");
+            }
+
+            String fileName = parts[1];
+
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(songBucket)
+                            .object(fileName)
+                            .build()
+            );
+
+            System.out.println("✅ Canción eliminada correctamente de MinIO: " + fileName);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error eliminando la canción de MinIO: " + e.getMessage(), e);
+        }
+    }
 
 }
 

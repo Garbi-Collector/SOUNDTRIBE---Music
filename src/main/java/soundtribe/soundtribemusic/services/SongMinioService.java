@@ -10,4 +10,6 @@ public interface SongMinioService {
     int getWavDurationInSeconds(MultipartFile file);
 
     boolean isValidDurationForSaving(MultipartFile file);
+
+    void deleteSongFromMinio(String fileUrl);
 }

@@ -6,4 +6,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public interface PhotoMinioService {
     String uploadCoverPhoto(String fileName, MultipartFile file);
+
+    void deleteCoverPhoto(String fileName);
 }

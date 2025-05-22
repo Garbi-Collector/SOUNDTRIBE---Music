@@ -41,4 +41,10 @@ public interface SongRepository extends JpaRepository<SongEntity, Long> {
     """, nativeQuery = true)
     List<SongEntity> findTop10MostLikedSongs();
 
+
+    List<SongEntity> findByArtistaIdsContaining(Long artistaId);
+
+    List<SongEntity> findByOwner(Long owner);
+
+
 }

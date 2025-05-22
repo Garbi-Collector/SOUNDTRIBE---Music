@@ -2,6 +2,7 @@ package soundtribe.soundtribemusic.services.impl;
 
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ public class PhotoMinioServiceImpl implements PhotoMinioService {
     @Value("${minio.bucket-name.portada}")
     private String portadaBucket;
 
-    private final long MAX_SIZE_BYTES = 3 * 1024 * 1024; // 3MB como ejemplo promedio
+    private final long MAX_SIZE_BYTES = 5 * 1024 * 1024; // 3MB como ejemplo promedio
 
     @Override
     public String uploadCoverPhoto(String fileName, MultipartFile file) {
@@ -39,7 +40,7 @@ public class PhotoMinioServiceImpl implements PhotoMinioService {
             }
 
             if (file.getSize() > MAX_SIZE_BYTES) {
-                throw new IllegalArgumentException("La imagen excede el tamaño máximo permitido (3MB)");
+                throw new IllegalArgumentException("La imagen excede el tamaño máximo permitido (5MB)");
             }
 
             minioClient.putObject(
@@ -54,6 +55,20 @@ public class PhotoMinioServiceImpl implements PhotoMinioService {
             return portadaBucket + "/" + fileName;
         } catch (Exception e) {
             throw new RuntimeException("Error al subir la imagen a MinIO: " + e.getMessage(), e);
+        }
+    }
+    @Override
+    public void deleteCoverPhoto(String fileName) {
+        try {
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(portadaBucket)
+                            .object(fileName)
+                            .build()
+            );
+            System.out.println("✅ Imagen eliminada de MinIO: " + fileName);
+        } catch (Exception e) {
+            throw new RuntimeException("❌ Error al eliminar la imagen de MinIO: " + e.getMessage(), e);
         }
     }
 }
