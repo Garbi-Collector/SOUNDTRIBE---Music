@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import soundtribe.soundtribemusic.services.impl.EliminateAccountFromMicroserviceImpl;
 
 @RestController
-@RequestMapping("/eliminate-music") // Puerto 8085
+@RequestMapping("/eliminate-music") // Puerto 8081
 public class EliminateAccountController {
 
     @Autowired
