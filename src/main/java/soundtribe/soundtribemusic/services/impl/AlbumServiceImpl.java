@@ -22,6 +22,7 @@ import soundtribe.soundtribemusic.external_APIS.UserFollowersService;
 import soundtribe.soundtribemusic.repositories.AlbumRepository;
 import soundtribe.soundtribemusic.repositories.AlbumVoteRepository;
 import soundtribe.soundtribemusic.services.AlbumService;
+import soundtribe.soundtribemusic.services.CacheService;
 import soundtribe.soundtribemusic.services.PhotoService;
 import soundtribe.soundtribemusic.services.SongService;
 
@@ -56,6 +57,8 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Autowired
     private AlbumVoteRepository albumVoteRepository;
+    @Autowired
+    private CacheService cacheService;
 
     /**
      * metodo especializado y central del microservicio, maneja muchas acciones
@@ -134,7 +137,7 @@ public class AlbumServiceImpl implements AlbumService {
                         .nameAlbum(albumsaved.getName())
                         .build()
         );
-
+        cacheService.limpiarCacheHomeDataCacheReciente();
         return mapperAlbum(albumsaved.getId());
     }
 
@@ -181,6 +184,7 @@ public class AlbumServiceImpl implements AlbumService {
 
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "albumGetCache", key = "'artist:' + #ownerId")
     @Override
     public List<ResponseAlbumDto> getAlbumsByOwnerId(Long ownerId) {
         List<AlbumEntity> albums = albumRepository.findByOwner(ownerId);
@@ -243,6 +247,7 @@ public class AlbumServiceImpl implements AlbumService {
                 );
             }
         }
+        cacheService.limpiarCacheHomeDataCacheValorado();
         albumRepository.save(album);
     }
 
@@ -267,6 +272,7 @@ public class AlbumServiceImpl implements AlbumService {
 
 
     @Transactional
+    @Cacheable(value = "albumGetCache", key = "'slug:' + #slug")
     @Override
     public ResponseAlbumDto getAlbumBySlug(String slug){
         System.out.println("el slug recibido es: " + slug);

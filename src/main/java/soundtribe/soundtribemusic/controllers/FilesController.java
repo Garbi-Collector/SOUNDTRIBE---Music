@@ -5,6 +5,7 @@ import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import soundtribe.soundtribemusic.entities.FilePhotoEntity;
 import soundtribe.soundtribemusic.entities.SongEntity;
 import soundtribe.soundtribemusic.repositories.FilePhotoRepository;
 import soundtribe.soundtribemusic.repositories.SongRepository;
+import soundtribe.soundtribemusic.services.CacheService;
 import soundtribe.soundtribemusic.services.PhotoMinioService;
 import soundtribe.soundtribemusic.services.PhotoService;
 
@@ -34,6 +36,8 @@ public class FilesController {
 
     @Autowired
     private SongRepository songRepository;
+    @Autowired
+    private CacheService cacheService;
 
     @Value("${minio.bucket-name.song}")
     private String songBucket;
@@ -43,6 +47,7 @@ public class FilesController {
     private String portadaBucket;
 
     @GetMapping("/portada/{id}")
+    @Cacheable(value = "portadaCache", key = "#id")
     public ResponseEntity<byte[]> getPortadaById(@PathVariable Long id) {
         try {
             // 1. Buscar la info del archivo en la base de datos
@@ -80,6 +85,8 @@ public class FilesController {
             // 2. Incrementar contador de reproducciones
             songEntity.setPlayCount(songEntity.getPlayCount() + 1);
             songRepository.save(songEntity);
+
+            cacheService.limpiarCacheHomeDataCacheEscuchados();
 
             // 3. Obtener archivo desde MinIO
             String[] parts = songEntity.getFileUrl().split("/");

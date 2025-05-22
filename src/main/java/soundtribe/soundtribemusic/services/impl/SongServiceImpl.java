@@ -1,6 +1,7 @@
 package soundtribe.soundtribemusic.services.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soundtribe.soundtribemusic.dtos.request.RequestSongDto;
@@ -64,6 +65,7 @@ public class SongServiceImpl implements SongService {
         return repo.save(song);
     }
 
+    @Cacheable("songsMapperCache")
     @Transactional(readOnly = true)
     @Override
     public ResponseSongDto getSongDto(Long id){

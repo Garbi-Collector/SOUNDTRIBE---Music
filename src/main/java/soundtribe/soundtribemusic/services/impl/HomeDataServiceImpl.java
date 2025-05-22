@@ -2,6 +2,7 @@ package soundtribe.soundtribemusic.services.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soundtribe.soundtribemusic.dtos.response.ResponseAlbumDto;
@@ -63,6 +64,7 @@ public class HomeDataServiceImpl implements HomeDataService {
      * Devuelve un listado de los 10 álbumes más recientes.
      * @return List<ResponseAlbumDto>
      */
+    @Cacheable("homeDataCacheReciente")
     @Transactional(readOnly = true)
     @Override
     public List<ResponseAlbumDto> getAlbumesMasRecientes() {
@@ -76,6 +78,7 @@ public class HomeDataServiceImpl implements HomeDataService {
      * historicamente
      * @return List<ResponseAlbumDto>
      */
+    @Cacheable("homeDataCacheValorado")
     @Transactional(readOnly = true)
     @Override
     public List<ResponseAlbumDto> getAlbumesMasValorados() {
@@ -90,6 +93,7 @@ public class HomeDataServiceImpl implements HomeDataService {
      * @see soundtribe.soundtribemusic.entities.SongEntity
      * @return List<ResponseAlbumDto>
      */
+    @Cacheable("homeDataCacheEscuchados")
     @Transactional(readOnly = true)
     @Override
     public List<ResponseAlbumDto> getAlbumesMasEscuchados() {
