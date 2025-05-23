@@ -2,6 +2,7 @@ package soundtribe.soundtribemusic.external_APIS;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -24,6 +25,7 @@ public class ExternalJWTService {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Cacheable(value = "externalJWTAPI", key = "#jwt")
     public Map<String, Object> validateToken(String jwt) {
         String url = userBackUrl + "api/jwt/validate";
 

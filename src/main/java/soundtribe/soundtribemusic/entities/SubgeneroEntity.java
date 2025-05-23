@@ -18,6 +18,7 @@ public class SubgeneroEntity {
     private Long id;
     private String name;
     private String description;
+    private String festejo;
 
     @ManyToOne
     @JoinColumn(name = "genero_id")

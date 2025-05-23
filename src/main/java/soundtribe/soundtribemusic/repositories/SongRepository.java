@@ -46,5 +46,6 @@ public interface SongRepository extends JpaRepository<SongEntity, Long> {
 
     List<SongEntity> findByOwner(Long owner);
 
+    List<SongEntity> findTop10ByOwnerOrderByPlayCountDesc(Long owner);
 
 }

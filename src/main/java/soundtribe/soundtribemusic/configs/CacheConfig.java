@@ -71,6 +71,49 @@ public class CacheConfig {
                         .build());
 
 
+        Cache externalJWTAPI = new CaffeineCache("externalJWTAPI",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(1, TimeUnit.HOURS)
+                        .maximumSize(1000)
+                        .build());
+
+        Cache getPlayCountCache = new CaffeineCache("getPlayCountCache",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(1, TimeUnit.HOURS)
+                        .maximumSize(1000)
+                        .build());
+
+        Cache getTopOfMySongsCache = new CaffeineCache("getTopOfMySongsCache",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(1, TimeUnit.HOURS)
+                        .maximumSize(1000)
+                        .build());
+
+        Cache generoMasEscuchadoCache = new CaffeineCache("generoMasEscuchadoCache",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(1, TimeUnit.HOURS)
+                        .maximumSize(1000)
+                        .build());
+
+        Cache estiloTopGlobalCache = new CaffeineCache("estiloTopGlobalCache",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(1, TimeUnit.HOURS)
+                        .maximumSize(1000)
+                        .build());
+
+        Cache subgeneroTopGlobalCache = new CaffeineCache("subgeneroTopGlobalCache",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(1, TimeUnit.HOURS)
+                        .maximumSize(1000)
+                        .build());
+
+        Cache generoTopGlobalCache = new CaffeineCache("generoTopGlobalCache",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(1, TimeUnit.HOURS)
+                        .maximumSize(1000)
+                        .build());
+
+
         // Agregá todos los caches al manager
         cacheManager.setCaches(Arrays.asList(
                 albumMapperCache,
@@ -80,6 +123,13 @@ public class CacheConfig {
                 homeDataCacheEscuchados,
                 portadaCache,
                 playSongCache,
+                externalJWTAPI,
+                getPlayCountCache,
+                getTopOfMySongsCache,
+                generoMasEscuchadoCache,
+                estiloTopGlobalCache,
+                subgeneroTopGlobalCache,
+                generoTopGlobalCache,
                 albumGetCache
         ));
 
