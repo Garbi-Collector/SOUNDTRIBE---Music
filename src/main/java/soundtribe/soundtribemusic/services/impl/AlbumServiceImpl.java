@@ -149,6 +149,10 @@ public class AlbumServiceImpl implements AlbumService {
         return slug;
     }
 
+
+
+
+
     @Cacheable(value = "albumMapperCache", key = "#id")
     @Transactional
     @Override
@@ -181,6 +185,13 @@ public class AlbumServiceImpl implements AlbumService {
                 .build();
 
     }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<AlbumEntity> getAll(){
+        return albumRepository.findAll();
+    }
+
 
 
     @Transactional(readOnly = true)

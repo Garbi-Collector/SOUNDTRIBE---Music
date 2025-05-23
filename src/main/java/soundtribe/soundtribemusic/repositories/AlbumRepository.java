@@ -35,4 +35,6 @@ public interface AlbumRepository extends JpaRepository<AlbumEntity, Long> {
         """, nativeQuery = true)
     List<AlbumEntity> findTop10MostPlayedAlbums();
 
+    @Query("SELECT a FROM AlbumEntity a JOIN a.songs s WHERE s.id = :songId")
+    Optional<AlbumEntity> findAlbumBySongId(Long songId);
 }

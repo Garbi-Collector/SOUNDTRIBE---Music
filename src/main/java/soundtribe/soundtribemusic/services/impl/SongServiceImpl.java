@@ -125,4 +125,11 @@ public class SongServiceImpl implements SongService {
                 .playCount(songE.getPlayCount())
                 .build();
     }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<SongEntity> getAll(){
+        return repo.findAll();
+    }
+
 }
