@@ -2,6 +2,7 @@ package soundtribe.soundtribemusic.services.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import soundtribe.soundtribemusic.dtos.response.ResponseAlbumDto;
 import soundtribe.soundtribemusic.dtos.response.ResponsePortadaDto;
@@ -23,12 +24,12 @@ import java.util.stream.Stream;
 @Service
 public class ExploreServiceImpl implements ExploreService {
 
-    private static final int MAX_ALBUMS_RETURNED = 15;
-    private static final int MAX_SONGS_RETURNED = 15;
+    protected static final int MAX_ALBUMS_RETURNED = 15;
+    protected static final int MAX_SONGS_RETURNED = 15;
 
-    private final AlbumService albumService;
-    private final AlbumRepository albumRepository;
-    private final SongService songService;
+    protected final AlbumService albumService;
+    protected final AlbumRepository albumRepository;
+    protected final SongService songService;
 
     @Autowired
     public ExploreServiceImpl(
@@ -56,6 +57,7 @@ public class ExploreServiceImpl implements ExploreService {
      * @param genero ID del género a filtrar (opcional)
      * @return Lista de ResponseAlbumDto ordenada por popularidad, máximo 15 elementos
      */
+    @Transactional(readOnly = true)
     @Override
     public List<ResponseAlbumDto> explorarAlbumes(String name, Long genero) {
         List<AlbumEntity> allAlbums = albumService.getAll();
@@ -81,6 +83,7 @@ public class ExploreServiceImpl implements ExploreService {
      * @param genero ID del género a filtrar (opcional)
      * @return Lista de ResponseSongPortadaDto ordenada por popularidad, máximo 15 elementos
      */
+    @Transactional(readOnly = true)
     @Override
     public List<ResponseSongPortadaDto> explorarCanciones(String name, Long genero) {
         List<SongEntity> allSongs = songService.getAll();
@@ -95,7 +98,8 @@ public class ExploreServiceImpl implements ExploreService {
     /**
      * Aplica los filtros correspondientes según los parámetros recibidos para álbumes
      */
-    private Stream<AlbumEntity> filterAlbums(List<AlbumEntity> albums, String name, Long genero) {
+    @Transactional(readOnly = true)
+    protected Stream<AlbumEntity> filterAlbums(List<AlbumEntity> albums, String name, Long genero) {
         Stream<AlbumEntity> stream = albums.stream();
 
         if (hasValidGenre(genero)) {
@@ -112,7 +116,8 @@ public class ExploreServiceImpl implements ExploreService {
     /**
      * Aplica los filtros correspondientes según los parámetros recibidos para canciones
      */
-    private Stream<SongEntity> filterSongs(List<SongEntity> songs, String name, Long genero) {
+    @Transactional(readOnly = true)
+    protected Stream<SongEntity> filterSongs(List<SongEntity> songs, String name, Long genero) {
         Stream<SongEntity> stream = songs.stream();
 
         if (hasValidGenre(genero)) {
@@ -130,7 +135,8 @@ public class ExploreServiceImpl implements ExploreService {
      * Crea un filtro para álbumes por género.
      * Un álbum coincide si más de la mitad de sus canciones pertenecen al género especificado.
      */
-    private Predicate<AlbumEntity> createGenreFilter(Long genero) {
+    @Transactional(readOnly = true)
+    protected Predicate<AlbumEntity> createGenreFilter(Long genero) {
         return album -> {
             List<SongEntity> songs = album.getSongs();
             if (songs.isEmpty()) {
@@ -141,7 +147,7 @@ public class ExploreServiceImpl implements ExploreService {
                     .filter(song -> containsGenre(song, genero))
                     .count();
 
-            return matchingSongs >= (songs.size() / 2);
+            return matchingSongs > (songs.size() / 2);
         };
     }
 
@@ -149,14 +155,16 @@ public class ExploreServiceImpl implements ExploreService {
      * Crea un filtro para canciones por género.
      * Una canción coincide si contiene el género especificado.
      */
-    private Predicate<SongEntity> createSongGenreFilter(Long genero) {
+    @Transactional(readOnly = true)
+    protected Predicate<SongEntity> createSongGenreFilter(Long genero) {
         return song -> containsGenre(song, genero);
     }
 
     /**
      * Crea un filtro para álbumes por nombre (case-insensitive)
      */
-    private Predicate<AlbumEntity> createNameFilter(String name) {
+    @Transactional(readOnly = true)
+    protected Predicate<AlbumEntity> createNameFilter(String name) {
         String lowerCaseName = name.toLowerCase();
         return album -> album.getName().toLowerCase().contains(lowerCaseName);
     }
@@ -164,7 +172,8 @@ public class ExploreServiceImpl implements ExploreService {
     /**
      * Crea un filtro para canciones por nombre (case-insensitive)
      */
-    private Predicate<SongEntity> createSongNameFilter(String name) {
+    @Transactional(readOnly = true)
+    protected Predicate<SongEntity> createSongNameFilter(String name) {
         String lowerCaseName = name.toLowerCase();
         return song -> song.getName().toLowerCase().contains(lowerCaseName);
     }
@@ -172,7 +181,8 @@ public class ExploreServiceImpl implements ExploreService {
     /**
      * Verifica si una canción contiene el género especificado
      */
-    private boolean containsGenre(SongEntity song, Long genero) {
+    @Transactional(readOnly = true)
+    protected boolean containsGenre(SongEntity song, Long genero) {
         return song.getGeneros().stream()
                 .anyMatch(g -> g.getId().equals(genero));
     }
@@ -180,7 +190,8 @@ public class ExploreServiceImpl implements ExploreService {
     /**
      * Mapea una SongEntity a ResponseSongPortadaDto
      */
-    private ResponseSongPortadaDto mapSongToResponseSongPortadaDto(SongEntity song) {
+    @Transactional(readOnly = true)
+    protected ResponseSongPortadaDto mapSongToResponseSongPortadaDto(SongEntity song) {
 
         ResponseSongDto songDto = songService.getSongDto(song.getId());
 
@@ -217,28 +228,32 @@ public class ExploreServiceImpl implements ExploreService {
     /**
      * Comparador para ordenar álbumes por playcount descendente
      */
-    private Comparator<ResponseAlbumDto> byPlayCountDescending() {
+    @Transactional(readOnly = true)
+    protected Comparator<ResponseAlbumDto> byPlayCountDescending() {
         return Comparator.comparing(ResponseAlbumDto::getAllPlaysCount).reversed();
     }
 
     /**
      * Comparador para ordenar canciones por playcount descendente
      */
-    private Comparator<ResponseSongPortadaDto> bySongPlayCountDescending() {
+    @Transactional(readOnly = true)
+    protected Comparator<ResponseSongPortadaDto> bySongPlayCountDescending() {
         return Comparator.comparing(ResponseSongPortadaDto::getPlayCount).reversed();
     }
 
     /**
      * Valida si el parámetro de género es válido
      */
-    private boolean hasValidGenre(Long genero) {
+    @Transactional(readOnly = true)
+    protected boolean hasValidGenre(Long genero) {
         return genero != null;
     }
 
     /**
      * Valida si el parámetro de nombre es válido
      */
-    private boolean hasValidName(String name) {
+    @Transactional(readOnly = true)
+    protected boolean hasValidName(String name) {
         return StringUtils.hasText(name);
     }
 }
