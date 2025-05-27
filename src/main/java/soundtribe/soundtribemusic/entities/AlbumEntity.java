@@ -23,6 +23,7 @@ public class AlbumEntity {
 
     private String name;
 
+    @Lob
     private String description;
 
     @Enumerated(EnumType.STRING)

@@ -279,6 +279,14 @@ public class AlbumServiceImpl implements AlbumService {
         return albumVoteRepository.existsByUserLikerAndAlbum_Id(userId, idAlbum);
     }
 
+    @Transactional
+    @Override
+    public Long likesAlbumCont(Long idAlbum){
+
+        return albumRepository.findById(idAlbum)
+                .orElseThrow(() -> new RuntimeException("Álbum no encontrado con el ID: " + idAlbum)).getLikeCount();
+    }
+
 
 
 

@@ -22,6 +22,7 @@ public class SongEntity {
 
     private String name;
 
+    @Lob
     private String description;
 
     private Integer duration; // en segundos

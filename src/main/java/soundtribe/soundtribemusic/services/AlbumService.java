@@ -31,5 +31,8 @@ public interface AlbumService {
 
     boolean isLikedAlbum(String jwt, Long idAlbum);
 
+    @Transactional
+    Long likesAlbumCont(Long idAlbum);
+
     ResponseAlbumDto getAlbumBySlug(String slug);
 }

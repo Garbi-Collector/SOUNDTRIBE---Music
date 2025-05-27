@@ -150,6 +150,20 @@ public class AlbumController {
         }
     }
 
+    @GetMapping("/{idAlbum}/likescount")
+    public ResponseEntity<?> LikesAlbumCount(
+            @PathVariable Long idAlbum
+    ) {
+        try {
+            Long likesCount = albumService.likesAlbumCont(idAlbum);
+            return ResponseEntity.ok(likesCount);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(403).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Ocurrió un error al procesar la acción.");
+        }
+    }
+
 
 
 }
